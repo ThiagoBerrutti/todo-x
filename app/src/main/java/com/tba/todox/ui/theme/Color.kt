@@ -14,6 +14,7 @@ val Purple1 = Color(0xFF8687E7)
 val Black1 = Color(0xFF121212)
 val GrayDark = Color(0xFF363636)
 val GrayLight = Color(0xFF979797)
+val GrayLight2 = Color(0xFFAFAFAF)
 val White1 = Color(0xFFE0E0E0)
 
 val Yellow = Color(0xFFC9CC41)
