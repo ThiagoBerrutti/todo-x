@@ -11,6 +11,11 @@ activityCompose = "1.9.3"
 composeBom = "2024.10.00"
 room = "2.6.1"
 koin = "4.1.0-Beta5"
+navigation = "2.8.5"
+serialization= "2.0.21"
+kotlinxSerialization="1.8.0"
+appcompat = "1.7.0"
+material = "1.12.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -28,6 +33,9 @@ androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-man
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 
+androidx-navigation = {group="androidx.navigation", name="navigation-compose", version.ref="navigation"}
+kotlinx-serialization={group="org.jetbrains.kotlinx", name="kotlinx-serialization-json", version.ref="kotlinxSerialization"}
+
 koin-core = {group = "io.insert-koin", name="koin-core", version.ref="koin"}
 koin-android = {group = "io.insert-koin", name="koin-android", version.ref="koin"}
 koin-androidx-compose = {group = "io.insert-koin", name="koin-androidx-compose", version.ref="koin"}
@@ -38,10 +46,13 @@ koin-compose-viewmodel = {group = "io.insert-koin", name="koin-compose-viewmodel
 room-compiler = {group = "androidx.room", name="room-compiler", version.ref = "room"}
 room-runtime = {group = "androidx.room", name="room-runtime", version.ref = "room"}
 room-ktx = {group = "androidx.room", name="room-ktx", version.ref = "room"}
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 ksp = { id= "com.google.devtools.ksp", version.ref = "ksp"}
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-
+kotlin-serialization = {id ="org.jetbrains.kotlin.plugin.serialization", version.ref="serialization"}
+android-library = { id = "com.android.library", version.ref = "agp" }
