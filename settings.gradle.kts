@@ -19,5 +19,11 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "To Do X"
+rootProject.name = "ToDoX"
+
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 include(":app")
+include(":feature:home")
+include(":core:model")
+include(":core:designsystem")
+include(":core:database")

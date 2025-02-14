@@ -2,27 +2,42 @@ package com.tba.todox.navigation
 
 import androidx.annotation.DrawableRes
 import com.tba.todox.R
+import com.tba.todox.feature.home.navigation.CalendarRoute
+import com.tba.todox.feature.home.navigation.FocusRoute
+import com.tba.todox.feature.home.navigation.HomeScreenRoute
+import com.tba.todox.feature.home.navigation.ProfileRoute
+import kotlin.reflect.KClass
 
 
-enum class TopDestination(val route: String, val label: String, @DrawableRes val icon: Int) {
-    HOME_SCREEN_ROUTE(
-        route = "HOME_SCREEN_ROUTE",
-        label = "Charts",
-        icon = R.drawable.home_2
+
+enum class TopDestination(
+    @DrawableRes val selectedIcon: Int,
+    @DrawableRes val unselectedIcon: Int,
+    val route:KClass<*>,
+    val label: String,
+) {
+    HOME(
+        selectedIcon = R.drawable.home_2_bold,
+        unselectedIcon =R.drawable.home_2_outline,
+        route = HomeScreenRoute::class,
+        label = "Index",
     ),
-    CALENDAR_SCREEN_ROUTE(
-        route = "CALENDAR_SCREEN_ROUTE",
+    CALENDAR(
+        selectedIcon =R.drawable.calendar_bold,
+        unselectedIcon =R.drawable.calendar_outline,
+        route = CalendarRoute::class,
         label = "Calendar",
-        icon = R.drawable.calendar_1
     ),
-    FOCUS_SCREEN_ROUTE(
-        route = "FOCUS_SCREEN_ROUTE",
+    FOCUS(
+        selectedIcon =R.drawable.clock_bold,
+        unselectedIcon =R.drawable.clock_outline,
+        route = FocusRoute::class,
         label = "Focus",
-        icon = R.drawable.clock
     ),
-    PROFILE_SCREEN_ROUTE(
-        route = "PROFILE_SCREEN_ROUTE",
+    PROFILE(
+        selectedIcon =R.drawable.user_bold,
+        unselectedIcon =R.drawable.user_outline,
+        route = ProfileRoute::class,
         label = "Profile",
-        icon = R.drawable.user
     ),
 }

@@ -53,6 +53,10 @@ android {
 }
 
 dependencies {
+    implementation(projects.feature.home)
+    implementation(projects.core.model)
+    implementation(projects.core.designsystem)
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -61,6 +65,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(project(":core:designsystem"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -71,9 +76,8 @@ dependencies {
 
     implementation(libs.androidx.navigation)
 
-    ksp(libs.room.compiler)
-    implementation(libs.room.runtime)
-    implementation(libs.room.ktx)
+
+
 
     api(libs.koin.core)
     implementation(libs.koin.android)

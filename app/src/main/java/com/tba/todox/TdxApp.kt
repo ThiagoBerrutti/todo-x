@@ -1,8 +1,12 @@
 package com.tba.todox
 
-import android.widget.Toast
+import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.consumeWindowInsets
@@ -21,36 +25,50 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.PlatformTextStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
-import com.tba.todox.home.navigation.HOME_SCREEN_ROUTE
+import androidx.navigation.NavDestination
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavDestination.Companion.hierarchy
+import com.tba.todox.feature.home.navigation.AddTaskRoute
 import com.tba.todox.navigation.TdxNavHost
-import com.tba.todox.navigation.TdxNavHostState
 import com.tba.todox.navigation.TopDestination
-import com.tba.todox.ui.HomeAddTaskModalBottomSheet
-import com.tba.todox.ui.theme.ToDoXTheme
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import kotlin.reflect.KClass
+
+fun Long.toFormattedTimestamp(
+    pattern: String = "dd/MM/yyyy HH:mm",
+    locale: Locale = Locale.getDefault(),
+): String =
+    SimpleDateFormat(pattern, locale)
+        .format(Date(this))
 
 
 @Composable
@@ -59,17 +77,58 @@ fun TdxApp(
     modifier: Modifier = Modifier,
 ) {
     val fabWidth = remember { 64.dp }
-    var showModal by remember { mutableStateOf(false) }
+    val currentDestination = appState.currentDestination
+    var showScaffold by remember { mutableStateOf(true) }
+
+    val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
         modifier = modifier,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = { TdxTopAppBar() },
-        bottomBar = { TdxBottomNavigationBar(fabWidth = fabWidth) },
+        bottomBar = {
+            if (showScaffold) {
+                NavigationBar {
+                    appState.topDestinations.forEachIndexed { index, destination ->
+                        val selected =
+                            currentDestination.isRouteInHierarchy(destination.route)
+
+                        if (index == 2) {
+                            Box(modifier = Modifier.size(fabWidth)) { }
+                        }
+
+                        NavigationBarItem(
+                            selected = selected,
+                            onClick = {
+                                appState.navigateToTopDestination(destination)
+                            },
+                            icon = {
+                                Icon(
+                                    painter = if (selected) {
+                                        painterResource(destination.selectedIcon)
+                                    } else {
+                                        painterResource(destination.unselectedIcon)
+                                    },
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            },
+                            label = { Text(text = destination.label, color = Color.White) },
+                        )
+                    }
+                }
+            }
+        },
         floatingActionButton = {
-            BottomBarFab(
-                width = fabWidth,
-                onClick = { showModal = true }
-            )
+            if (showScaffold) {
+                BottomBarFab(
+                    width = fabWidth,
+                    onClick = {
+                        appState.navController.navigate(AddTaskRoute)
+                    }
+                )
+            }
         },
         floatingActionButtonPosition = FabPosition.Center
     ) { padding ->
@@ -84,29 +143,16 @@ fun TdxApp(
                 )
                 .fillMaxSize()
         ) {
-//            val s = TdxNavHostState(appState, "test")
-            val s = TdxNavHostState(appState, HOME_SCREEN_ROUTE)
-
-            TdxNavHost(state = s)
-
-            if (showModal) {
-                val ctx = LocalContext.current
-                HomeAddTaskModalBottomSheet(
-                    onDismissRequest = { showModal = false },
-                    onSend = {
-                        Toast.makeText(
-                            ctx,
-                            "${it.title} - ${it.description}",
-                            Toast.LENGTH_SHORT
-                        )
-                            .show()
-                    }
-                )
-
+            Box(
+                modifier = Modifier
+                    .consumeWindowInsets(WindowInsets(0, 0, 0, 0))
+            ) {
+                TdxNavHost(appState)
             }
         }
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -143,29 +189,38 @@ fun TdxTopAppBar(modifier: Modifier = Modifier) {
     }
 }
 
-@Composable
-fun TdxBottomNavigationBar(modifier: Modifier = Modifier, fabWidth: Dp) {
-    NavigationBar(modifier = modifier) {
-        val destinations = TopDestination.entries.toList()
-        destinations.mapIndexed { index, dest ->
-            if (index == 2) {
-                Box(modifier = Modifier.size(fabWidth)) { }
-            }
 
-            NavigationBarItem(
-                selected = false,
-                onClick = { /*TODO*/ },
-                icon = {
-                    Icon(
-                        painter = painterResource(id = dest.icon),
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(24.dp)
-                    )
-                },
-                label = { Text(text = dest.label, color = Color.White) },
-            )
-        }
+@Composable
+fun TdxBottomNavigationBar(
+    modifier: Modifier = Modifier,
+    onCalendarClick: () -> Unit,
+    fabWidth: Dp,
+    items: @Composable RowScope.() -> Unit,
+) {
+    NavigationBar(modifier = modifier) {
+//        val destinations = TopDestination.entries.toList()
+        items()
+//        destinations.mapIndexed { index, dest ->
+//            if (index == 2) {
+//                Box(modifier = Modifier.size(fabWidth)) { }
+//            }
+
+
+//            NavigationBarItem(
+//                selected = false,
+//                onClick = { if (index == 1) onCalendarClick() },
+//                icon = {
+//                    if (selected)
+//                        Icon(
+//                            painter = painterResource(id = dest.icon),
+//                            contentDescription = null,
+//                            tint = Color.White,
+//                            modifier = Modifier.size(24.dp)
+//                        )
+//                },
+//                label = { Text(text = dest.label, color = Color.White) },
+//            )
+//        }
 
     }
 }
@@ -191,13 +246,12 @@ fun BottomBarFab(width: Dp, onClick: () -> Unit = {}) {
 }
 
 
-@Preview
-@Composable
-private fun AppPreview() {
-    val context = LocalContext.current
-    val state = TdxAppState(navController = NavHostController(context))
-    ToDoXTheme {
-        TdxApp(appState = state)
-    }
+private fun NavDestination?.isTopLevelDestinationInHierarchy(destination: TopDestination) =
+    this?.hierarchy?.any {
+        it.route?.contains(destination.name, true) ?: false
+    } ?: false
 
-}
+private fun NavDestination?.isRouteInHierarchy(destination: KClass<*>) =
+    this?.hierarchy?.any {
+        it.hasRoute(destination)
+    } ?: false
